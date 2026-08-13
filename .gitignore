@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+**/build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Android
+captures/
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+
+# 临时
+temps/
+*.log
