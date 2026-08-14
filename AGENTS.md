@@ -65,6 +65,7 @@ AI 绝对不能自动执行以下操作,除非用户明确、清晰地用中文�
 - 打包:commons-compress(tar.gz)
 - 存储:DataStore Preferences + Room
 - 序列化:kotlinx-serialization(JSON)
+- **版本基线**:所有依赖/工具链版本以 `docs/08-implementation-plan.md`「版本基线」为准(2026-08 已升级 AGP 9.x / Kotlin 2.4 / OkHttp 5.x / JDK 21);升级 minor 直接改,跨 major 必须更新 `docs/10-adr.md` ADR-011
 - 禁止添加新依赖,除非有充分理由并在 docs/10-adr.md 记录
 
 ## 📚 文档更新

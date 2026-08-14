@@ -1,6 +1,6 @@
 # 01 · 整体架构
 
-> 版本:0.1.0 | 更新时间:2026-08-13
+> 版本:0.2.0 | 更新时间:2026-08-14
 
 ## 1. 项目概述
 
@@ -14,16 +14,16 @@
 
 | 领域 | 选型 | 理由 |
 |------|------|------|
-| 语言 | Kotlin 2.0+ | Android 官方语言 |
+| 语言 | Kotlin 2.4+ | Android 官方语言 |
 | UI | Jetpack Compose + Material 3 | 现代声明式 UI |
 | 架构 | MVVM + 单 Activity + Navigation Compose | 官方推荐模式,状态可测试 |
-| 网络 | OkHttp 4.x | 最成熟的 JVM HTTP 客户端 |
+| 网络 | OkHttp 5.x | 最成熟的 JVM HTTP 客户端 |
 | OCI 协议 | 自研轻量客户端(core/oci) | JVM 无现成 OCI artifact 客户端,协议简单 |
 | 加密 | javax.crypto(AES/GCM)+ BouncyCastle(scrypt) | 与 Go `x/crypto/scrypt` 算法参数一致 |
 | 打包 | commons-compress | tar + gzip 标准实现 |
 | 存储 | DataStore Preferences(设置)+ Room(历史) | Android 官方存储方案 |
 | 序列化 | kotlinx-serialization | Kotlin 原生 |
-| 构建 | Gradle Kotlin DSL + AGP 8.x | 标准 |
+| 构建 | Gradle Kotlin DSL + AGP 9.x(Gradle 9 + JDK 21)| 标准 |
 
 **完整选型论证见 [10-adr.md](10-adr.md)**。
 

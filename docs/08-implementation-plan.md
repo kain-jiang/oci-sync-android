@@ -1,6 +1,6 @@
 # 08 · 实施计划(供 AI 工具按里程碑落地)
 
-> 版本:0.1.0 | 更新时间:2026-08-13
+> 版本:0.2.0 | 更新时间:2026-08-14
 > 目标:AI 工具(Cursor/Claude Code/OpenCode 等)按本计划顺序实现,每个里程碑有明确验收标准。
 
 ## 0. 项目脚手架(前置)
@@ -17,28 +17,37 @@ oci-sync-android/
 └── .gitignore
 ```
 
-**版本基线(2026-08,以能解析为准,可升级 minor):**
+**版本基线(2026-08-14 向官方仓库核实的最新稳定版,以能解析为准,可升级 minor):**
 
 ```toml
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
-composeBom = "2024.12.01"
-activityCompose = "1.9.3"
-navigationCompose = "2.8.5"
-lifecycle = "2.8.7"
-room = "2.6.1"
-okhttp = "4.12.0"
-bouncycastle = "1.78.1"
-commonsCompress = "1.27.1"
-kotlinxSerialization = "1.7.3"
-datastore = "1.1.1"
-ksp = "2.1.0-1.0.29"
+# 工具链
+agp = "9.3.1"            # AGP 9.x,配套 Gradle 9;9.4 尚在 alpha
+gradleWrapper = "9.7.0"  # gradle wrapper 版本
+jdk = "21"               # LTS;AGP 9 要求 JDK 17+,21 最稳(25 LTS 待官方确认)
+kotlin = "2.4.10"
+ksp = "2.3.11"           # KSP 已独立版本号,落地时以与 Kotlin 2.4 兼容说明为准
+composeBom = "2026.08.00"
+activityCompose = "1.13.0"
+navigationCompose = "2.9.8"
+lifecycle = "2.11.0"
+coreKtx = "1.19.0"
+room = "2.8.4"
+datastore = "1.2.1"
+okhttp = "5.4.0"
+mockwebserver = "5.4.0"  # 随 OkHttp 5.x
+bouncycastle = "1.85.2"
+commonsCompress = "1.28.0"
+kotlinxSerialization = "1.11.0"
+coroutines = "1.11.0"
 junit = "4.13.2"
-mockwebserver = "4.12.0"
-coroutinesTest = "1.9.0"
-robolectric = "4.14.1"
+robolectric = "4.14.1"   # 落地时可升级
 ```
+
+**工具链说明(2026-08 升级,决策记录见 10-adr.md ADR-011):**
+- Kotlin 2.4:Compose 编译器随 Kotlin 发布,用 `org.jetbrains.kotlin.plugin.compose` 插件,不再需要 `composeOptions`/`kotlinCompilerExtensionVersion`
+- AGP 9:支持 built-in Kotlin(新工程可免 `kotlin-android` 插件);脚手架阶段保守起见仍显式应用,落地时验证后决定
+- Gradle 9.x:配置缓存更成熟,建议开启;编译/运行 JDK 用 21 LTS
 
 **core 模块要点**:
 - `plugins { kotlin("jvm"); kotlin("plugin.serialization") }`
@@ -46,7 +55,7 @@ robolectric = "4.14.1"
 - **core 不依赖任何 Android 类** → 纯 JVM 单测
 
 **app 模块要点**:
-- minSdk 26,targetSdk 35,compileSdk 35
+- minSdk 26,targetSdk 36,compileSdk 36(Android 16;Play 自 2026-08 起强制 target API 36)
 - 依赖:compose BOM、material3、navigation-compose、lifecycle-viewmodel-compose、room(ksp)、datastore-preferences、core 模块
 - `android:allowBackup="false"`、`foregroundServiceType="dataSync"`(Android 14+)
 

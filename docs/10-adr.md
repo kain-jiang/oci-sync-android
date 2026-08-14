@@ -1,6 +1,6 @@
 # 10 · 架构决策记录(ADR)
 
-> 版本:0.1.0 | 更新时间:2026-08-13
+> 版本:0.2.0 | 更新时间:2026-08-14
 > 状态说明:`✅ 已采纳`(实现必须遵守)/ `🔄 备选`(未采纳但可参考)
 
 ---
@@ -110,6 +110,43 @@
 **状态:✅ 已采纳(继承上游行为)**
 
 **规则**:含 `.`/`:` 或 `localhost` 的 host 显式使用;单段名补 `docker.io` + `library/` 前缀。`ReferenceParser.parse("alpine")` → `registry-1.docker.io/library/alpine`(registry-1 为 docker.io 的规范推送主机)。
+
+---
+
+## ADR-011:工具链升级到 2026-08 最新稳定基线
+
+**状态:✅ 已采纳**
+
+**背景**:原版本基线(AGP 8.7.3 / Kotlin 2.1.0 / OkHttp 4.12 / targetSdk 35)已落后约一年半,存在安全与维护成本问题。Google Play 自 2026-08 起强制新应用 target API 36,原基线已不满足上架要求。
+
+**升级内容(2026-08-14 向 Google Maven / Maven Central / GitHub 官方源逐一核实的最新稳定版):**
+
+| 组件 | 旧 | 新 | 说明 |
+|------|-----|-----|------|
+| AGP | 8.7.3 | 9.3.1 | major 升级,需 Gradle 9 |
+| Gradle(wrapper) | — | 9.7.0 | AGP 9.x 配套 |
+| JDK | 17 | 21 LTS | AGP 9 要求 JDK 17+,21 最稳;25 LTS 待官方确认 |
+| Kotlin | 2.1.0 | 2.4.10 | Compose 编译器随 Kotlin 发布 |
+| KSP | 2.1.0-1.0.29 | 2.3.11 | KSP 已独立版本号,落地时验证与 Kotlin 2.4 兼容 |
+| Compose BOM | 2024.12.01 | 2026.08.00 | 含 Material 3 1.4.0 |
+| OkHttp / MockWebServer | 4.12.0 | 5.4.0 | Kotlin 重写,协程原生支持 |
+| Room | 2.6.1 | 2.8.4 | 支持 KMP(未来 core 可迁移) |
+| DataStore | 1.1.1 | 1.2.1 | |
+| targetSdk / compileSdk | 35 | 36 | Android 16,Play 上架要求 |
+| 其余(navigation 2.9.8、lifecycle 2.11.0、BC 1.85.2、commons-compress 1.28.0、kotlinx-serialization 1.11.0 等) | | | 完整清单见 08-implementation-plan.md 版本基线 |
+
+**理由**:
+- OkHttp 5.x:Kotlin 重写、`suspend` 协程 API、默认更强 TLS 配置,安全与开发效率双提升
+- Kotlin 2.4:Compose 编译器内置(`org.jetbrains.kotlin.plugin.compose`),删除 `composeOptions` 配置,版本错配问题消失
+- AGP 9.x:built-in Kotlin 支持、构建管线优化;Gradle 9 配置缓存更成熟
+- targetSdk 36:满足 Play 2026-08 强制要求,避免上架被拒
+
+**风险与缓解**:
+- AGP 9 为 major 升级,存在 breaking changes:脚手架 M0 实际构建为最终验证;若遇阻可回退 AGP 8.13 + Gradle 8.14,仅损失新特性,不影响架构设计
+- KSP 与 Kotlin 2.4.10 的兼容组合在 M0 验证,失败则按官方兼容矩阵调整
+- JDK 25 LTS 暂不采用,待 AGP 官方支持矩阵确认后评估
+
+**格式兼容影响**:无。工具链升级不改变字节级格式(02-core-format.md),与 Go CLI 的互操作测试矩阵(09-testing.md §3)继续有效。
 
 ---
 

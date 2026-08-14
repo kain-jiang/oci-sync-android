@@ -24,8 +24,8 @@ Android 客户端,将本地文件/目录同步到 OCI 兼容镜像仓库。这�
 | 加密 | javax.crypto AES/GCM + BouncyCastle scrypt |
 | 打包 | commons-compress(tar.gz) |
 | 本地存储 | DataStore(设置)+ Room(活动历史) |
-| 构建 | Gradle Kotlin DSL + AGP 8.x |
-| minSdk / targetSdk | 26 / 35 |
+| 构建 | Gradle Kotlin DSL + AGP 9.x(Gradle 9.7 + JDK 21)|
+| minSdk / targetSdk | 26 / 36 |
 
 ## 文档导航(按实施顺序阅读)
 
@@ -45,7 +45,7 @@ Android 客户端,将本地文件/目录同步到 OCI 兼容镜像仓库。这�
 ## 构建
 
 ```bash
-# 需要 JDK 17+、Android SDK
+# 需要 JDK 21+、Android SDK(platform 36)
 ./gradlew assembleDebug          # 构建 debug APK
 ./gradlew test                   # 运行单元测试
 ./gradlew connectedDebugAndroidTest  # 运行仪器测试(需设备/模拟器)
