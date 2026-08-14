@@ -15,6 +15,7 @@
     <string name="home_push">推送文件</string>
     <string name="home_pull">拉取文件</string>
     <string name="home_settings">设置</string>
+    <string name="shortcut_push_new">推送新版本</string>
     <string name="home_push_coming_soon">推送功能开发中,敬请期待</string>
     <string name="home_pull_coming_soon">拉取功能开发中,敬请期待</string>
 

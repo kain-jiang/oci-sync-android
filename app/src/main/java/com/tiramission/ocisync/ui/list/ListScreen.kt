@@ -205,7 +205,7 @@ private fun ArtifactRow(
             }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
             ) {
                 TextButton(onClick = onPull) { Text(stringResource(R.string.list_action_pull)) }
                 TextButton(onClick = onLabels) { Text(stringResource(R.string.list_action_labels)) }

@@ -48,11 +48,19 @@ import com.tiramission.ocisync.core.model.Stage
 /** 推送页:选择文件/目录 → 配置 → 执行,见 docs/06-ui-design.md §3.2。 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PushScreen(onBack: () -> Unit) {
+fun PushScreen(
+    initialRef: String = "",
+    onBack: () -> Unit,
+) {
     val context = LocalContext.current
     val app = context.applicationContext as OciSyncApp
     val viewModel: PushViewModel = viewModel(factory = PushViewModel.Factory(app.container.syncService, context))
     val state by viewModel.uiState.collectAsState()
+
+    // 预填初始 ref(来自快捷仓库「推送新版本」入口)
+    androidx.compose.runtime.LaunchedEffect(initialRef) {
+        if (initialRef.isNotBlank()) viewModel.onRemoteRefChange(initialRef)
+    }
 
     val fileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { viewModel.onFilePicked(it) }

@@ -37,13 +37,15 @@ object Routes {
     const val BROWSE = "browse"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
-    const val PUSH = "push"
+    const val PUSH = "push?ref={ref}"
+    const val PUSH_ARG_REF = "ref"
     const val PULL = "pull?ref={ref}"
     const val PULL_ARG_REF = "ref"
     const val SHORTCUT = "shortcut/{name}/{repo}"
     const val SHORTCUT_ARG_NAME = "name"
     const val SHORTCUT_ARG_REPO = "repo"
 
+    fun push(ref: String = ""): String = "push?ref=${java.net.URLEncoder.encode(ref, "UTF-8")}"
     fun pull(ref: String): String = "pull?ref=${java.net.URLEncoder.encode(ref, "UTF-8")}"
     fun shortcut(name: String, repo: String): String =
         "shortcut/${java.net.URLEncoder.encode(name, "UTF-8")}/${java.net.URLEncoder.encode(repo, "UTF-8")}"
@@ -103,8 +105,8 @@ fun OciSyncAppRoot() {
             composable(Routes.HOME) {
                 HomeScreen(
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                    onOpenPush = { navController.navigate(Routes.PUSH) },
-                    onOpenPull = { navController.navigate(Routes.PULL) },
+                    onOpenPush = { navController.navigate(Routes.push()) },
+                    onOpenPull = { navController.navigate(Routes.pull("")) },
                     onOpenShortcut = { name, repo -> navController.navigate(Routes.shortcut(name, repo)) },
                 )
             }
@@ -115,8 +117,18 @@ fun OciSyncAppRoot() {
                 )
             }
             composable(Routes.HISTORY) { HistoryScreen() }
-            composable(Routes.PUSH) {
-                PushScreen(onBack = { navController.popBackStack() })
+            composable(
+                route = Routes.PUSH,
+                arguments = listOf(navArgument(Routes.PUSH_ARG_REF) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }),
+            ) { entry ->
+                val initialRef = entry.arguments?.getString(Routes.PUSH_ARG_REF).orEmpty()
+                PushScreen(
+                    initialRef = initialRef,
+                    onBack = { navController.popBackStack() },
+                )
             }
             composable(
                 route = Routes.PULL,
@@ -145,6 +157,7 @@ fun OciSyncAppRoot() {
                     repo = repo,
                     onBack = { navController.popBackStack() },
                     onPullArtifact = { ref -> navController.navigate(Routes.pull(ref)) },
+                    onPushNew = { navController.navigate(Routes.push(repo)) },
                 )
             }
             composable(Routes.SETTINGS) {
