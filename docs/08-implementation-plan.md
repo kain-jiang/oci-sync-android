@@ -55,7 +55,7 @@ robolectric = "4.14.1"   # 落地时可升级
 - **core 不依赖任何 Android 类** → 纯 JVM 单测
 
 **app 模块要点**:
-- minSdk 26,targetSdk 36,compileSdk 36(Android 16;Play 自 2026-08 起强制 target API 36)
+- minSdk 26,targetSdk 36,compileSdk 37(Android 16/17;Play 自 2026-08 起强制 target API 36;compileSdk 37 为 2026-08 最新 androidx 稳定版要求)
 - 依赖:compose BOM、material3、navigation-compose、lifecycle-viewmodel-compose、room(ksp)、datastore-preferences、core 模块
 - `android:allowBackup="false"`、`foregroundServiceType="dataSync"`(Android 14+)
 

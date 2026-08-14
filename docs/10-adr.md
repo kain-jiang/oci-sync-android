@@ -132,7 +132,7 @@
 | OkHttp / MockWebServer | 4.12.0 | 5.4.0 | Kotlin 重写,协程原生支持 |
 | Room | 2.6.1 | 2.8.4 | 支持 KMP(未来 core 可迁移) |
 | DataStore | 1.1.1 | 1.2.1 | |
-| targetSdk / compileSdk | 35 | 36 | Android 16,Play 上架要求 |
+| targetSdk / compileSdk | 35 | 36 / 37 | targetSdk 36(Play 要求);compileSdk 37 由最新 androidx(core-ktx 1.19.0 等)强制 |
 | 其余(navigation 2.9.8、lifecycle 2.11.0、BC 1.85.2、commons-compress 1.28.0、kotlinx-serialization 1.11.0 等) | | | 完整清单见 08-implementation-plan.md 版本基线 |
 
 **理由**:
