@@ -34,10 +34,20 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true // Robolectric 需要
+            all { it.maxHeapSize = "1g" }  // Robolectric 加载 android-all 需要较多内存
+        }
+    }
 }
 
 dependencies {
     implementation(project(":core"))
+
+    // core 的 implementation 依赖不传递,app 直接使用处需显式声明
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -55,4 +65,10 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // JVM 单元测试(Robolectric)
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

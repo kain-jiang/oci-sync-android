@@ -105,12 +105,17 @@
 
 | 用例 | 层级 |
 |------|------|
-| KeystoreCrypto 加密→解密往返 | Robolectric |
+| KeystoreCrypto 加密→解密往返 | ~~Robolectric~~ → **真机/模拟器** |
 | Room ActivityStore 增删查 + 100 上限 | Robolectric(in-memory Room) |
 | DataStore 读写 | Robolectric |
 | MainActivity 启动 + 三 Tab 切换 | connected(Compose UI test) |
 | PushScreen 表单校验(空 ref 禁用按钮) | connected |
 | ListScreen 空态/错误态显示 | connected |
+
+> ⚠️ 2026-08-14 更新:Robolectric 无法模拟 AndroidKeyStore 的 binder 服务
+> (`Could not connect to Keystore service`),`KeystoreCryptoTest` 已 `@Ignore`
+> 并保留代码;该用例必须在真机/模拟器执行(`connectedDebugAndroidTest`),
+> 加解密逻辑本身与 core CryptoEngine 同构,由 M1 单测 + 04 §6 真机验收覆盖。
 
 ## 5. 覆盖率目标
 
