@@ -69,9 +69,10 @@ fun ListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // 顶部:ref + 标签筛选 + 查询(紧凑,固定不滚动)
             OutlinedTextField(
                 value = state.ref,
                 onValueChange = viewModel::onRefChange,
@@ -79,7 +80,11 @@ fun ListScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 OutlinedTextField(
                     value = state.labelFilter,
                     onValueChange = viewModel::onFilterChange,
@@ -101,36 +106,34 @@ fun ListScreen(
                 )
             }
 
-            when {
-                state.loading -> Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                    contentAlignment = Alignment.Center,
-                ) { CircularProgressIndicator() }
+            // 结果区:占剩余空间,可滚动
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                when {
+                    state.loading -> CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                    )
 
-                state.artifacts.isEmpty() && !state.error.isNullOrEmpty() -> Unit
+                    state.artifacts.isEmpty() && !state.error.isNullOrEmpty() -> Unit
 
-                state.artifacts.isEmpty() -> Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
+                    state.artifacts.isEmpty() -> Text(
                         text = stringResource(R.string.browse_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.Center),
                     )
-                }
 
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(state.artifacts, key = { it.digest }) { artifact ->
-                        ArtifactRow(
-                            artifact = artifact,
-                            onPull = { onPullArtifact(artifact.fullName) },
-                            onDelete = { viewModel.requestDelete(artifact) },
-                            onLabels = { viewModel.openLabelDialog(artifact) },
-                        )
+                    else -> LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(state.artifacts, key = { it.digest }) { artifact ->
+                            ArtifactRow(
+                                artifact = artifact,
+                                onPull = { onPullArtifact(artifact.fullName) },
+                                onDelete = { viewModel.requestDelete(artifact) },
+                                onLabels = { viewModel.openLabelDialog(artifact) },
+                            )
+                        }
                     }
                 }
             }
