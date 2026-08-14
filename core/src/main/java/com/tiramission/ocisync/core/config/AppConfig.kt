@@ -66,9 +66,10 @@ class ConfigLoader(
         store.put(key, json.encodeToString(AppConfig.serializer(), encrypted))
     }
 
-    /** 返回指定 registry 的明文凭据(内存态)。 */
+    /** 返回指定 registry 的明文凭据(内存态)。host 归一化匹配(去 scheme/默认端口/尾斜杠)。 */
     fun getRegistryAuth(host: String): RegistryAuth? {
-        val auth = load().auths[host] ?: return null
+        val norm = normalizeHost(host)
+        val auth = load().auths.entries.firstOrNull { normalizeHost(it.key) == norm }?.value ?: return null
         if (auth.password.isEmpty()) return auth
         return auth.copy(password = secretCodec.decrypt(auth.password))
     }
@@ -96,12 +97,23 @@ class ConfigLoader(
 
     fun addAuth(host: String, auth: RegistryAuth) {
         val config = load()
-        save(config.copy(auths = config.auths + (host to auth)))
+        save(config.copy(auths = config.auths + (normalizeHost(host) to auth)))
     }
 
     fun removeAuth(host: String) {
         val config = load()
-        save(config.copy(auths = config.auths - host))
+        save(config.copy(auths = config.auths - normalizeHost(host)))
+    }
+
+    /**
+     * host 归一化:去 scheme、默认端口(443/80)、尾斜杠、空白。
+     * 避免 "https://host/" / "host:443" 与 "host" 匹配失败导致匿名请求。
+     */
+    private fun normalizeHost(host: String): String {
+        var h = host.trim().trimEnd('/')
+        h = h.removePrefix("https://").removePrefix("http://")
+        h = h.removeSuffix(":443").removeSuffix(":80")
+        return h
     }
 
     private fun validateRepo(repo: String): Result<Unit> {

@@ -106,4 +106,35 @@ class ConfigLoaderTest {
         store.put("app_config", "{not-json")
         assertTrue(newLoader(store).load().auths.isEmpty())
     }
+
+    // ── host 归一化匹配 ──────────────────────────────────
+
+    @Test
+    fun `auth lookup ignores scheme port and trailing slash`() {
+        val loader = newLoader()
+        loader.addAuth("https://registry.example.com/", RegistryAuth("u", "p"))
+
+        // 各种写法都能匹配到
+        assertEquals("u", loader.getRegistryAuth("registry.example.com")?.username)
+        assertEquals("u", loader.getRegistryAuth("registry.example.com:443")?.username)
+        assertEquals("u", loader.getRegistryAuth("https://registry.example.com")?.username)
+        assertEquals("u", loader.getRegistryAuth(" registry.example.com ")?.username)
+        assertNull(loader.getRegistryAuth("other.example.com"))
+    }
+
+    @Test
+    fun `non-default port is preserved in normalization`() {
+        val loader = newLoader()
+        loader.addAuth("localhost:5000", RegistryAuth("u", "p"))
+        assertEquals("u", loader.getRegistryAuth("localhost:5000")?.username)
+        assertNull(loader.getRegistryAuth("localhost")) // 5000 不是默认端口,不归一化
+    }
+
+    @Test
+    fun `removeAuth works with normalized host`() {
+        val loader = newLoader()
+        loader.addAuth("https://registry.example.com/", RegistryAuth("u", "p"))
+        loader.removeAuth("registry.example.com:443")
+        assertNull(loader.getRegistryAuth("registry.example.com"))
+    }
 }
