@@ -12,6 +12,16 @@ android {
     // 注:2026-08 最新 androidx 稳定版(core-ktx 1.19.0 等)要求 compileSdk 37+
     compileSdk = 37
 
+    // 统一 debug 签名:仓库内固定 keystore,本地与 CI 签名一致,可覆盖安装
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.tiramission.ocisync"
         minSdk = 26
@@ -21,6 +31,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

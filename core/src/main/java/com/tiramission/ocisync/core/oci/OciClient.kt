@@ -139,8 +139,7 @@ class OciClient(
      */
     suspend fun checkCredential(registryHost: String, credential: Credential): AuthCheckResult =
         withContext(Dispatchers.IO) {
-            val scheme = if (allowInsecureHttp) "http" else "https"
-            val url = "$scheme://$registryHost/v2/"
+            val url = "${schemeFor(registryHost)}://$registryHost/v2/"
             val request = Request.Builder()
                 .url(url)
                 .header("Authorization", basicAuth(credential))
@@ -325,8 +324,20 @@ class OciClient(
     }
 
     private fun baseUrl(ref: Reference): String {
-        val scheme = if (allowInsecureHttp) "http" else "https"
+        val scheme = schemeFor(ref.registryHost)
         return "$scheme://${ref.registryHost}/v2"
+    }
+
+    /**
+     * 协议选择:域名(公网 registry 如 SWR/GHCR/Docker Hub)一律 HTTPS;
+     * 仅 localhost/IP 直连(自建内网 registry、模拟器宿主)在 allowInsecureHttp 时用 HTTP。
+     * 避免 debug 构建把真实 registry 也降级成 http(华为云 SWR 等不支持 http)。
+     */
+    private fun schemeFor(host: String): String {
+        val isLocalOrIp = host.startsWith("localhost") ||
+            host.startsWith("127.") ||
+            host.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+"))
+        return if (allowInsecureHttp && isLocalOrIp) "http" else "https"
     }
 
     /** 构造带凭据 tag 的请求(拦截器从中取凭据发 token 挑战)。 */

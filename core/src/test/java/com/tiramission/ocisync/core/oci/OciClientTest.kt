@@ -319,4 +319,31 @@ class OciClientTest {
         val result = client.checkCredential("localhost:1", Credential("u", "p"))
         assertEquals(AuthCheckResult.NETWORK_ERROR, result)
     }
+
+    // ── 协议选择(修复:debug 全开 http 导致真实 registry 降级) ──
+
+    @Test
+    fun `domain registry never uses cleartext even with allowInsecureHttp`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200)) // 不应被消费
+        val client = newClient() // allowInsecureHttp = true
+        val domainRef = ReferenceParser.parse("registry.example.com/team/repo:v1")
+        val ex = try {
+            client.isEncrypted(domainRef)
+            null
+        } catch (e: OciException) {
+            e
+        }
+        // 域名走 https,不会用 http 到达本地 mock;无论网络错误与否,本地 server 不应收到请求
+        assertEquals(0, server.requestCount)
+        assertTrue(ex is OciException.Network)
+    }
+
+    @Test
+    fun `ip host uses cleartext when allowInsecureHttp`() = runTest {
+        server.enqueue(MockResponse().setBody(manifestBody(encrypted = true)))
+        // localhost:port 解析为显式 IP?localhost 非 IP,但 schemeFor 把 localhost 归为本地地址 → http ✓
+        assertTrue(newClient().isEncrypted(ref))
+        val req = server.takeRequest(1, TimeUnit.SECONDS)!!
+        assertEquals("/v2/team/repo/manifests/v1", req.path)
+    }
 }
