@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tiramission.ocisync.R
-import com.tiramission.ocisync.ui.list.ListScreen
+import com.tiramission.ocisync.ui.list.ListContent
 
 /**
  * shortcut 操作台:预填 repo 查询 tag 列表 + 行操作 + 「推送新版本」入口。
@@ -60,7 +60,7 @@ fun ShortcutDetailScreen(
         Box(
             modifier = Modifier.padding(innerPadding),
         ) {
-            ListScreen(initialRef = repo, onPullArtifact = onPullArtifact)
+            ListContent(initialRef = repo, onPullArtifact = onPullArtifact)
         }
     }
 }

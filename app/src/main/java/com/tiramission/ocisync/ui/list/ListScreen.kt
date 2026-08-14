@@ -42,12 +42,34 @@ import com.tiramission.ocisync.R
 import com.tiramission.ocisync.core.model.ArtifactInfo
 import java.util.Locale
 
-/** 仓库浏览:查询 + 结果表格 + 行操作(拉取/删除/标签),见 docs/06-ui-design.md §3.4。 */
+/** 仓库浏览页外壳(带标题栏),见 docs/06-ui-design.md §3.4。 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(
     initialRef: String? = null,
     onPullArtifact: (String) -> Unit,
+) {
+    Scaffold(
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.browse_title)) }) },
+    ) { innerPadding ->
+        ListContent(
+            initialRef = initialRef,
+            onPullArtifact = onPullArtifact,
+            modifier = Modifier.padding(innerPadding),
+        )
+    }
+}
+
+/**
+ * 仓库浏览内容层(无外壳):查询 + 结果表格 + 行操作。
+ * 供 Browse 页(自带标题栏)与 ShortcutDetail 页(自带标题栏 + 底部按钮)复用,
+ * 避免嵌套 Scaffold 造成双层标题栏与空白。
+ */
+@Composable
+fun ListContent(
+    initialRef: String? = null,
+    onPullArtifact: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as OciSyncApp
@@ -62,16 +84,12 @@ fun ListScreen(
         }
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.browse_title)) }) },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
             // 顶部:ref + 标签筛选 + 查询(紧凑,固定不滚动)
             OutlinedTextField(
                 value = state.ref,
@@ -137,7 +155,6 @@ fun ListScreen(
                     }
                 }
             }
-        }
     }
 
     // 删除确认
