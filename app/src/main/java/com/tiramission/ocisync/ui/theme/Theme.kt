@@ -44,12 +44,11 @@ private val DarkColors = darkColorScheme(
     onError = OnErrorDark,
 )
 
-/** 主题:深色跟随系统。API 31+ 动态取色(Material You)易受壁纸影响导致卡片变色,
- *  默认关闭以保持视觉一致性;如需 Material You 可启用。 */
+/** 主题:深色跟随系统;API 31+ 动态取色(Material You),见 docs/06-ui-design.md §1。 */
 @Composable
 fun OciSyncTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
