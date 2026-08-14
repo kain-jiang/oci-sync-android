@@ -82,12 +82,13 @@ class OciClient(
             }
 
             // 2. POST /v2/<name>/blobs/uploads/
+            // OCI spec:201 Created 或 202 Accepted 均合法(部分 registry 如华为 SWR 返回 202)
             val uploadResp = executeWithRetry(
                 newRequest(ref, cred)
                     .url("${baseUrl(ref)}/${ref.repository}/blobs/uploads/")
                     .post(ByteArray(0).toRequestBody(null, 0, 0))
                     .build()
-            ) { r -> r.code == 201 }
+            ) { r -> r.code == 201 || r.code == 202 }
             val location = uploadResp.header("Location")
                 ?: throw OciException.Protocol("registry returned no Location for blob upload")
             uploadResp.close()
@@ -98,7 +99,7 @@ class OciClient(
             val body = ProgressRequestBody(tmp, octetStream, dataSize, onProgress)
             val putResp = executeWithRetry(
                 newRequest(ref, cred).url(putUrl).put(body).build()
-            ) { r -> r.code == 201 }
+            ) { r -> r.code == 201 || r.code == 202 }
             putResp.close()
 
             // 4. PUT manifest(带 tag)
@@ -121,7 +122,7 @@ class OciClient(
                     .url("${baseUrl(ref)}/${ref.repository}/manifests/${ref.tag}")
                     .put(manifestBytes.toRequestBody(manifestMediaType))
                     .build()
-            ) { r -> r.code == 201 }
+            ) { r -> r.code == 201 || r.code == 202 }
             manifestResp.close()
         } finally {
             tmp.delete()
@@ -265,14 +266,14 @@ class OciClient(
                 .url("${baseUrl(ref)}/${ref.repository}/manifests/$newDigest")
                 .put(bytes.toRequestBody(manifestMediaType))
                 .build()
-        ) { r -> r.code == 201 }
+        ) { r -> r.code == 201 || r.code == 202 }
         digestResp.close()
         val tagResp = executeWithRetry(
             newRequest(ref, cred)
                 .url("${baseUrl(ref)}/${ref.repository}/manifests/${ref.tag}")
                 .put(bytes.toRequestBody(manifestMediaType))
                 .build()
-        ) { r -> r.code == 201 }
+        ) { r -> r.code == 201 || r.code == 202 }
         tagResp.close()
     }
 

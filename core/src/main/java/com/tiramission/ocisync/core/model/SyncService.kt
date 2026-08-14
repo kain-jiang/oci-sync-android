@@ -177,7 +177,10 @@ class SyncService(
                 localPath = localPath,
                 labels = labels,
                 success = result.isSuccess,
-                error = result.exceptionOrNull()?.message,
+                // 取消类异常给出友好文案,而非内部协程信息
+                error = result.exceptionOrNull()?.let { e ->
+                    if (e is kotlinx.coroutines.CancellationException) "operation cancelled" else e.message
+                },
             )
         )
     }
