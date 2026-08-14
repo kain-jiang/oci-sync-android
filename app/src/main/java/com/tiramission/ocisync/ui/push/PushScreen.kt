@@ -24,11 +24,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -56,6 +61,28 @@ fun PushScreen(onBack: () -> Unit) {
         uri?.let { viewModel.onDirectoryPicked(it) }
     }
 
+    // Android 13+ 通知权限(前台服务进度通知需要)
+    val notifPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            val granted = androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS,
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!granted) notifPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    // 提示消息(转入后台任务等)
+    // 注:material3 1.4 移除了 rememberSnackbarHostState(),用 remember 包裹
+    val snackbarHostState = remember { SnackbarHostState() }
+    androidx.compose.runtime.LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onMessageShown()
+        }
+    }
+
     val stageLabel = when (state.stage) {
         Stage.PACKING -> stringResource(R.string.stage_packing)
         Stage.ENCRYPTING -> stringResource(R.string.stage_encrypting)
@@ -65,6 +92,7 @@ fun PushScreen(onBack: () -> Unit) {
     }
 
     Scaffold(
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.push_title)) },

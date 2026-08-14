@@ -81,6 +81,16 @@
     <string name="push_add_label">Add label</string>
     <string name="push_execute">Push</string>
     <string name="push_cancel">Cancel</string>
+    <string name="push_bg_started">Large file moved to background task, see notification for progress</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Transfers</string>
+    <string name="notif_title_push">Push files</string>
+    <string name="notif_starting">Preparing…</string>
+    <string name="notif_progress">Progress %1$d%%</string>
+    <string name="notif_success">Success</string>
+    <string name="notif_failed">Failed</string>
+    <string name="notif_push_done">Push finished</string>
 
     <!-- Pull -->
     <string name="pull_title">Pull files</string>

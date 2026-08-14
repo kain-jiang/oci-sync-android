@@ -5,10 +5,12 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.tiramission.ocisync.R
 import com.tiramission.ocisync.core.model.PushRequest
 import com.tiramission.ocisync.core.model.Stage
 import com.tiramission.ocisync.core.model.SyncService
 import com.tiramission.ocisync.data.SafFiles
+import com.tiramission.ocisync.service.SyncForegroundService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +36,7 @@ class PushViewModel(
         val stage: Stage = Stage.IDLE,
         val progress: Float = 0f,             // 0..1
         val error: String? = null,
+        val message: String? = null,          // 提示(Snackbar),如"已转入后台任务"
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -85,6 +88,16 @@ class PushViewModel(
         val state = _uiState.value
         val file = state.selectedFile ?: return
         if (state.remoteRef.isBlank()) return
+
+        // 大文件(≥20MB)走前台服务,退后台不中断(docs/06 §6)
+        if (totalSize(file) >= LARGE_FILE_THRESHOLD) {
+            SyncForegroundService.startPush(context, file, state.remoteRef.trim(), state.passphrase.ifBlank { null })
+            _uiState.update {
+                it.copy(error = null, message = context.getString(R.string.push_bg_started))
+            }
+            return
+        }
+
         pushJob?.cancel()
         pushJob = viewModelScope.launch {
             _uiState.update { it.copy(isRunning = true, error = null, progress = 0f, stage = Stage.PACKING) }
@@ -113,11 +126,23 @@ class PushViewModel(
         _uiState.update { it.copy(isRunning = false, stage = Stage.IDLE) }
     }
 
+    fun onMessageShown() = _uiState.update { it.copy(message = null) }
+
     class Factory(
         private val syncService: SyncService,
         private val context: Context,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = PushViewModel(syncService, context) as T
+    }
+
+    companion object {
+        private const val LARGE_FILE_THRESHOLD = 20L * 1024 * 1024 // 20MB
+
+        private fun totalSize(file: File): Long = when {
+            file.isFile -> file.length()
+            file.isDirectory -> file.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+            else -> 0L
+        }
     }
 }

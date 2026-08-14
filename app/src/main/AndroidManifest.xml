@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".OciSyncApp"
@@ -10,6 +12,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.OciSync">
+
+        <!-- 大文件传输前台服务(Android 14+ dataSync 类型) -->
+        <service
+            android:name=".service.SyncForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <activity
             android:name=".MainActivity"
