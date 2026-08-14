@@ -65,4 +65,51 @@
     <string name="common_success">Success</string>
     <string name="common_failed">Failed</string>
     <string name="common_error">Error</string>
+    <string name="common_show">Show</string>
+    <string name="common_hide">Hide</string>
+    <string name="common_confirm_delete_title">Confirm delete</string>
+
+    <!-- Push -->
+    <string name="push_title">Push files</string>
+    <string name="push_select_file">Select file</string>
+    <string name="push_select_dir">Select folder</string>
+    <string name="push_selected">Selected: %1$s</string>
+    <string name="push_ref_hint">Remote repo, e.g. registry.example.com/myteam/files:latest</string>
+    <string name="push_passphrase">Passphrase (optional)</string>
+    <string name="push_label_key">Label key</string>
+    <string name="push_label_value">value</string>
+    <string name="push_add_label">Add label</string>
+    <string name="push_execute">Push</string>
+    <string name="push_cancel">Cancel</string>
+
+    <!-- Pull -->
+    <string name="pull_title">Pull files</string>
+    <string name="pull_ref_hint">Remote reference, e.g. registry.example.com/myteam/files:latest</string>
+    <string name="pull_select_dest">Choose destination folder</string>
+    <string name="pull_dest_selected">Destination: %1$s</string>
+    <string name="pull_passphrase">Passphrase (required if encrypted)</string>
+    <string name="pull_execute">Pull</string>
+
+    <!-- Stages -->
+    <string name="stage_packing">Packing…</string>
+    <string name="stage_encrypting">Encrypting…</string>
+    <string name="stage_uploading">Uploading…</string>
+    <string name="stage_downloading">Downloading…</string>
+    <string name="stage_decrypting">Decrypting…</string>
+    <string name="stage_unpacking">Unpacking…</string>
+    <string name="stage_done">Done</string>
+
+    <!-- Browse -->
+    <string name="browse_label_filter">Label filter (key or key=value, comma separated)</string>
+    <string name="browse_empty">No artifacts found</string>
+    <string name="list_encrypted">Encrypted</string>
+    <string name="list_action_pull">Pull</string>
+    <string name="list_action_labels">Labels</string>
+    <string name="list_action_delete">Delete</string>
+    <string name="list_label_dialog_title">Labels · %1$s</string>
+    <string name="list_label_dialog_current">Current labels:</string>
+    <string name="list_label_remove">Remove</string>
+
+    <!-- History filter -->
+    <string name="history_filter_all">All</string>
 </resources>

@@ -86,7 +86,12 @@ class SyncService(
             if (encrypted && request.passphrase.isNullOrEmpty()) {
                 throw IllegalStateException("artifact is encrypted, passphrase required")
             }
-            val pulled = ociClient.pull(ref)
+            // 下载进度:size 在 pull 返回后可知;流读取(pull 返回后)才触发回调,时序安全
+            var pulledSize = 0L
+            val pulled = ociClient.pull(ref) { bytes ->
+                if (pulledSize > 0) onProgress(bytes.toFloat() / pulledSize)
+            }
+            pulledSize = pulled.size
             if (encrypted) {
                 pulled.data.use { stream ->
                     onStage(Stage.DECRYPTING)

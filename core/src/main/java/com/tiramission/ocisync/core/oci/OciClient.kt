@@ -130,8 +130,8 @@ class OciClient(
         fetchManifest(ref, authProvider.credential(ref.registryHost)).manifest.annotations[ENCRYPTED_KEY] == "true"
     }
 
-    /** pull:GET manifest + GET layer(流式)。 */
-    suspend fun pull(ref: Reference): PullResult = withContext(Dispatchers.IO) {
+    /** pull:GET manifest + GET layer(流式,带下载进度回调)。 */
+    suspend fun pull(ref: Reference, onProgress: ((Long) -> Unit)? = null): PullResult = withContext(Dispatchers.IO) {
         val cred = authProvider.credential(ref.registryHost)
         val fetched = fetchManifest(ref, cred)
         val layer = fetched.manifest.layers.firstOrNull()
@@ -140,10 +140,10 @@ class OciClient(
             .url("${baseUrl(ref)}/${ref.repository}/blobs/${layer.digest}")
             .build()
         val resp = executeWithRetry(req) { r -> r.code == 200 }
-        val stream = resp.body?.byteStream()
+        val body = resp.body
             ?: throw OciException.Protocol("empty blob response")
         PullResult(
-            data = stream,
+            data = CountingInputStream(body.byteStream(), body.contentLength(), onProgress),
             encrypted = fetched.manifest.annotations[ENCRYPTED_KEY] == "true",
             size = layer.size,
         )
@@ -362,6 +362,35 @@ class OciClient(
     }
 
     private fun hex(bytes: ByteArray): String = bytes.joinToString("") { "%02x".format(it) }
+
+    /** 包装输入流,读取时按字节回调进度(用于下载进度)。 */
+    private class CountingInputStream(
+        private val delegate: InputStream,
+        private val total: Long,
+        private val onProgress: ((Long) -> Unit)?,
+    ) : InputStream() {
+        private var count = 0L
+
+        override fun read(): Int {
+            val b = delegate.read()
+            if (b >= 0) {
+                count++
+                onProgress?.invoke(count)
+            }
+            return b
+        }
+
+        override fun read(b: ByteArray, off: Int, len: Int): Int {
+            val n = delegate.read(b, off, len)
+            if (n > 0) {
+                count += n
+                onProgress?.invoke(count)
+            }
+            return n
+        }
+
+        override fun close() = delegate.close()
+    }
 
     /** 流式上传 RequestBody,带进度回调。 */
     private class ProgressRequestBody(

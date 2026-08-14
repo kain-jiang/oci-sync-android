@@ -65,4 +65,51 @@
     <string name="common_success">成功</string>
     <string name="common_failed">失败</string>
     <string name="common_error">错误</string>
+    <string name="common_show">显示</string>
+    <string name="common_hide">隐藏</string>
+    <string name="common_confirm_delete_title">确认删除</string>
+
+    <!-- 推送 -->
+    <string name="push_title">推送文件</string>
+    <string name="push_select_file">选择文件</string>
+    <string name="push_select_dir">选择目录</string>
+    <string name="push_selected">已选择:%1$s</string>
+    <string name="push_ref_hint">远程仓库,如 registry.example.com/myteam/files:latest</string>
+    <string name="push_passphrase">加密口令(可选)</string>
+    <string name="push_label_key">标签 key</string>
+    <string name="push_label_value">value</string>
+    <string name="push_add_label">添加标签</string>
+    <string name="push_execute">推送</string>
+    <string name="push_cancel">取消</string>
+
+    <!-- 拉取 -->
+    <string name="pull_title">拉取文件</string>
+    <string name="pull_ref_hint">远程仓库引用,如 registry.example.com/myteam/files:latest</string>
+    <string name="pull_select_dest">选择目标目录</string>
+    <string name="pull_dest_selected">目标:%1$s</string>
+    <string name="pull_passphrase">解密口令(加密内容必填)</string>
+    <string name="pull_execute">拉取</string>
+
+    <!-- 阶段 -->
+    <string name="stage_packing">打包中…</string>
+    <string name="stage_encrypting">加密中…</string>
+    <string name="stage_uploading">上传中…</string>
+    <string name="stage_downloading">下载中…</string>
+    <string name="stage_decrypting">解密中…</string>
+    <string name="stage_unpacking">解包中…</string>
+    <string name="stage_done">完成</string>
+
+    <!-- 浏览 -->
+    <string name="browse_label_filter">标签筛选(key 或 key=value,逗号分隔)</string>
+    <string name="browse_empty">没有找到本工具产物</string>
+    <string name="list_encrypted">已加密</string>
+    <string name="list_action_pull">拉取</string>
+    <string name="list_action_labels">标签</string>
+    <string name="list_action_delete">删除</string>
+    <string name="list_label_dialog_title">标签管理 · %1$s</string>
+    <string name="list_label_dialog_current">当前标签:</string>
+    <string name="list_label_remove">移除</string>
+
+    <!-- 历史筛选 -->
+    <string name="history_filter_all">全部</string>
 </resources>

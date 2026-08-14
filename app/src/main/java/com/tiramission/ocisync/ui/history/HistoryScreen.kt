@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,29 +66,59 @@ fun HistoryScreen() {
             )
         },
     ) { innerPadding ->
-        if (uiState.activities.isEmpty()) {
-            Box(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            // 类型筛选
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center,
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.history_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                FilterChip(
+                    selected = uiState.filter == null,
+                    onClick = { viewModel.setFilter(null) },
+                    label = { Text(stringResource(R.string.history_filter_all)) },
                 )
+                ActivityType.entries.forEach { type ->
+                    val label = when (type) {
+                        ActivityType.PUSH -> stringResource(R.string.history_type_push)
+                        ActivityType.PULL -> stringResource(R.string.history_type_pull)
+                        ActivityType.DELETE -> stringResource(R.string.history_type_delete)
+                        ActivityType.LABEL -> stringResource(R.string.history_type_label)
+                    }
+                    FilterChip(
+                        selected = uiState.filter == type,
+                        onClick = { viewModel.setFilter(type) },
+                        label = { Text(label) },
+                    )
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(uiState.activities, key = { "${it.timestamp}-${it.remoteRef}" }) { activity ->
-                    HistoryRow(activity)
+
+            if (uiState.activities.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.history_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(uiState.activities, key = { "${it.timestamp}-${it.remoteRef}" }) { activity ->
+                        HistoryRow(activity)
+                    }
                 }
             }
         }

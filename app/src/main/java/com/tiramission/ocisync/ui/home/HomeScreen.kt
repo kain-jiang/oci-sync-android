@@ -47,6 +47,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onOpenSettings: () -> Unit,
+    onOpenPush: () -> Unit,
+    onOpenPull: () -> Unit,
+    onOpenShortcut: (name: String, repo: String) -> Unit,
 ) {
     val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as OciSyncApp
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory(app.container.configLoader))
@@ -87,17 +90,13 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Button(
-                        onClick = {
-                            scope.launch { snackbarHostState.showSnackbar(pushComingSoon) }
-                        },
+                        onClick = onOpenPush,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(R.string.home_push))
                     }
                     OutlinedButton(
-                        onClick = {
-                            scope.launch { snackbarHostState.showSnackbar(pullComingSoon) }
-                        },
+                        onClick = onOpenPull,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(R.string.home_pull))
@@ -143,7 +142,10 @@ fun HomeScreen(
                 }
             } else {
                 items(uiState.shortcuts, key = { it.first }) { (name, shortcut) ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        onClick = { onOpenShortcut(name, shortcut.repo) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = name, style = MaterialTheme.typography.titleSmall)
                             Text(
@@ -162,5 +164,5 @@ fun HomeScreen(
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
-    OciSyncTheme { HomeScreen(onOpenSettings = {}) }
+    OciSyncTheme { HomeScreen(onOpenSettings = {}, onOpenPush = {}, onOpenPull = {}, onOpenShortcut = { _, _ -> }) }
 }
