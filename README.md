@@ -5,13 +5,14 @@ Android 客户端,将本地文件/目录同步到 OCI 兼容镜像仓库。这�
 ## 功能
 
 - **push**:选择本地文件/目录(SAF 文件选择器)→ tar.gz 打包 → 可选 AES-256-GCM 加密 → 推送为 OCI artifact
-- **pull**:从 OCI 仓库拉取 → 自动检测加密状态 → 可选解密 → 解包到本地目录
+- **pull**:从 OCI 仓库拉取 → 自动检测加密状态 → 可选解密 → 解包到本地目录(SAF)
 - **list**:列出仓库/注册表下所有由本工具上传的 artifact,支持标签筛选
 - **delete**:删除远程 artifact
 - **label**:管理 manifest annotations 上的标签(set/unset)
 - **shortcuts**:快捷仓库配置,一键 push/pull/list/delete
-- **recent**:本地活动历史记录
+- **recent**:本地活动历史记录(含类型筛选)
 - **认证**:为每个 registry 配置独立凭据(存储时经 Android Keystore 加密)
+- **大文件后台任务**:≥20MB 传输自动转前台服务,通知显示进度,退后台不中断
 
 ## 技术栈
 
@@ -49,7 +50,15 @@ Android 客户端,将本地文件/目录同步到 OCI 兼容镜像仓库。这�
 ./gradlew assembleDebug          # 构建 debug APK
 ./gradlew test                   # 运行单元测试
 ./gradlew connectedDebugAndroidTest  # 运行仪器测试(需设备/模拟器)
+
+# 3.7G 小内存机器(本地开发机):用脚本自动规避 dex 阶段 OOM
+./scripts/build-apk.sh
+
+# 互操作样本复现 + Android 端互操作测试(需 Go)
+./scripts/interop.sh
 ```
+
+**CI**:GitHub Actions 自动执行 test + assembleDebug + assembleRelease(R8 验证)+ lint,debug APK 以 artifact 形式保留 14 天(手动触发:Actions → Build → Run workflow)。
 
 ## 仓库
 
