@@ -97,6 +97,7 @@ fun ListContent(
                 label = { Text(stringResource(R.string.browse_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                supportingText = { Text(state.ref) }, // 完整引用(超出滚动)显示在下方
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -109,6 +110,7 @@ fun ListContent(
                     label = { Text(stringResource(R.string.browse_label_filter)) },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
+                    supportingText = { Text(state.labelFilter.takeIf { it.isNotBlank() } ?: "") }, // 长标签输入完整显示
                 )
                 Button(onClick = viewModel::search) {
                     Icon(Icons.Filled.Search, contentDescription = null)

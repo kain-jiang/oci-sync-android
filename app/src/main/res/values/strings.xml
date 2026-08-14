@@ -118,7 +118,7 @@
     <string name="stage_done">完成</string>
 
     <!-- 浏览 -->
-    <string name="browse_label_filter">标签筛选(key 或 key=value,逗号分隔)</string>
+    <string name="browse_label_filter">标签筛选(k 或 k=v)</string>
     <string name="browse_empty">没有找到本工具产物</string>
     <string name="list_encrypted">已加密</string>
     <string name="list_action_pull">拉取</string>

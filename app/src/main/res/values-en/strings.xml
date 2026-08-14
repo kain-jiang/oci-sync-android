@@ -118,7 +118,7 @@
     <string name="stage_done">Done</string>
 
     <!-- Browse -->
-    <string name="browse_label_filter">Label filter (key or key=value, comma separated)</string>
+    <string name="browse_label_filter">Label filter (k or k=v)</string>
     <string name="browse_empty">No artifacts found</string>
     <string name="list_encrypted">Encrypted</string>
     <string name="list_action_pull">Pull</string>
