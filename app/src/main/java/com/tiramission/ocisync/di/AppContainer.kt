@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import com.tiramission.ocisync.BuildConfig
 import com.tiramission.ocisync.core.config.ConfigLoader
 import com.tiramission.ocisync.core.model.SyncService
 import com.tiramission.ocisync.core.oci.OciClient
@@ -59,7 +60,8 @@ class AppContainer(context: Context) {
             client = httpClient,
             authProvider = ConfigAuthProvider(configLoader),
             tokenCache = TokenCache(),
-            allowInsecureHttp = false, // 生产强制 HTTPS(docs/04 §4)
+            // 生产(release)强制 HTTPS(docs/04 §4);debug 构建允许 http,便于内网/模拟器测试
+            allowInsecureHttp = BuildConfig.DEBUG,
         )
     }
 
