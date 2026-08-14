@@ -1,5 +1,6 @@
 package com.tiramission.ocisync.ui.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -68,6 +69,9 @@ fun OciSyncAppRoot() {
     val currentRoute = backStackEntry?.destination?.route
 
     Scaffold(
+        // 外层只负责底部导航,不处理系统栏 inset(各页面 Scaffold/TopAppBar 自行消费,
+        // 避免与内层 Scaffold 重复加状态栏 padding 导致顶部空白)
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (bottomTabs.any { tab -> currentRoute?.startsWith(tab.route.substringBefore("?") ) == true }) {
                 NavigationBar {

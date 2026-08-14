@@ -35,7 +35,10 @@
     <string name="settings_version">版本 %1$s</string>
     <string name="settings_upstream">上游 Go CLI:tiramission/oci-sync</string>
     <string name="settings_license">MIT License</string>
-    <string name="settings_credential_added">凭据已保存</string>
+    <string name="settings_credential_added">凭据验证通过,已保存</string>
+    <string name="settings_credential_invalid">凭据验证失败,请检查用户名/密码</string>
+    <string name="settings_credential_network">无法连接 registry,请检查地址与网络</string>
+    <string name="settings_credential_verifying">验证中…</string>
     <string name="settings_credential_removed">凭据已删除</string>
     <string name="settings_shortcut_added">快捷仓库已添加</string>
     <string name="settings_shortcut_removed">快捷仓库已删除</string>

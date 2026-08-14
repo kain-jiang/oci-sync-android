@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -51,7 +52,9 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as OciSyncApp
-    val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory(app.container.configLoader))
+    val viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModel.Factory(app.container.configLoader, app.container.ociClient)
+    )
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -63,9 +66,19 @@ fun SettingsScreen(
     val msgShortcutAdded = stringResource(R.string.settings_shortcut_added)
     val msgShortcutRemoved = stringResource(R.string.settings_shortcut_removed)
     val msgInvalid = stringResource(R.string.settings_error_invalid)
+    val msgCredInvalid = stringResource(R.string.settings_credential_invalid)
+    val msgCredNetwork = stringResource(R.string.settings_credential_network)
 
+    // 消息:ViewModel 用标记值,此处映射为本地化文案
     LaunchedEffect(uiState.message) {
-        uiState.message?.let {
+        val text = when (uiState.message) {
+            SettingsViewModel.CRED_ADDED -> msgCredentialAdded
+            SettingsViewModel.CRED_INVALID -> msgCredInvalid
+            SettingsViewModel.CRED_NETWORK -> msgCredNetwork
+            null -> null
+            else -> uiState.message
+        }
+        text?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.onMessageShown()
         }
@@ -156,15 +169,22 @@ fun SettingsScreen(
                         visualTransformation = PasswordVisualTransformation(),
                     )
                     Button(
-                        onClick = {
-                            val ok = viewModel.addCredential()
-                            scope.launch {
-                                snackbarHostState.showSnackbar(if (ok) msgCredentialAdded else msgInvalid)
-                            }
-                        },
+                        onClick = { viewModel.addCredential() },
+                        enabled = !uiState.credentialVerifying,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(stringResource(R.string.settings_add_credential))
+                        if (uiState.credentialVerifying) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_credential_verifying),
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        } else {
+                            Text(stringResource(R.string.settings_add_credential))
+                        }
                     }
                 }
             }

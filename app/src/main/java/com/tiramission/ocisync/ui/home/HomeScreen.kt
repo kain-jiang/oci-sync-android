@@ -67,7 +67,6 @@ fun HomeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
-                navigationIcon = { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.home_settings))

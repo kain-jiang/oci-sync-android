@@ -35,7 +35,10 @@
     <string name="settings_version">Version %1$s</string>
     <string name="settings_upstream">Upstream Go CLI: tiramission/oci-sync</string>
     <string name="settings_license">MIT License</string>
-    <string name="settings_credential_added">Credential saved</string>
+    <string name="settings_credential_added">Credential verified and saved</string>
+    <string name="settings_credential_invalid">Credential verification failed, check username/password</string>
+    <string name="settings_credential_network">Cannot reach registry, check address and network</string>
+    <string name="settings_credential_verifying">Verifying…</string>
     <string name="settings_credential_removed">Credential removed</string>
     <string name="settings_shortcut_added">Shortcut added</string>
     <string name="settings_shortcut_removed">Shortcut removed</string>

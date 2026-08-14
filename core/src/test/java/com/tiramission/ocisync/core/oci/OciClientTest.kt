@@ -262,4 +262,61 @@ class OciClientTest {
         assertTrue(newClient().isEncrypted(ref))
         assertEquals(2, server.requestCount)
     }
+
+    // ── 凭据验证 ─────────────────────────────────────────
+
+    @Test
+    fun `checkCredential valid when v2 returns 200`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200))
+        val result = newClient().checkCredential("localhost:${server.port}", Credential("user", "pass"))
+        assertEquals(AuthCheckResult.VALID, result)
+        val req = server.takeRequest(1, TimeUnit.SECONDS)!!
+        assertEquals("/v2/", req.path)
+        assertTrue(req.getHeader("Authorization")!!.startsWith("Basic "))
+    }
+
+    @Test
+    fun `checkCredential invalid on 401 without bearer challenge`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(401))
+        val result = newClient().checkCredential("localhost:${server.port}", Credential("user", "wrong"))
+        assertEquals(AuthCheckResult.INVALID, result)
+    }
+
+    @Test
+    fun `checkCredential valid via bearer token flow`() = runTest {
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse = when {
+                request.path?.substringBefore("?") == "/token" -> MockResponse().setBody("""{"token":"tok"}""")
+                else -> MockResponse()
+                    .setResponseCode(401)
+                    .setHeader("WWW-Authenticate", "Bearer realm=\"${server.url("/token")}\",service=\"s\",scope=\"registry:catalog:*\"")
+            }
+        }
+        val result = newClient().checkCredential("localhost:${server.port}", Credential("user", "pass"))
+        assertEquals(AuthCheckResult.VALID, result)
+    }
+
+    @Test
+    fun `checkCredential invalid when token flow fails`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(401)
+                .setHeader("WWW-Authenticate", "Bearer realm=\"${server.url("/token")}\",service=\"s\"")
+        )
+        server.enqueue(MockResponse().setResponseCode(401)) // token 端点拒绝
+        val result = newClient().checkCredential("localhost:${server.port}", Credential("user", "wrong"))
+        assertEquals(AuthCheckResult.INVALID, result)
+    }
+
+    @Test
+    fun `checkCredential network error on unreachable host`() = runTest {
+        val client = OciClient(
+            OkHttpClient.Builder().connectTimeout(2, TimeUnit.SECONDS).build(),
+            authProvider,
+            allowInsecureHttp = true,
+        )
+        // 无监听端口 → 连接失败
+        val result = client.checkCredential("localhost:1", Credential("u", "p"))
+        assertEquals(AuthCheckResult.NETWORK_ERROR, result)
+    }
 }

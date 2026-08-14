@@ -31,6 +31,9 @@ interface RegistryAuthProvider {
 /** pull 结果:layer 字节流(由调用方关闭)。 */
 class PullResult(val data: InputStream, val encrypted: Boolean, val size: Long)
 
+/** 凭据验证结果(设置页添加凭据时使用)。 */
+enum class AuthCheckResult { VALID, INVALID, NETWORK_ERROR }
+
 /**
  * 轻量 OCI Distribution Spec 客户端,见 docs/03-oci-protocol.md。
  * - 401 → Bearer token 流程(拦截器,单次重试)
@@ -129,6 +132,41 @@ class OciClient(
     suspend fun isEncrypted(ref: Reference): Boolean = withContext(Dispatchers.IO) {
         fetchManifest(ref, authProvider.credential(ref.registryHost)).manifest.annotations[ENCRYPTED_KEY] == "true"
     }
+
+    /**
+     * 验证 registry 凭据是否有效(设置页添加凭据时调用)。
+     * 流程:GET /v2/(带 Basic)→ 200 有效;401+Bearer 挑战 → 走 token 流程取 token;其余无效。
+     */
+    suspend fun checkCredential(registryHost: String, credential: Credential): AuthCheckResult =
+        withContext(Dispatchers.IO) {
+            val scheme = if (allowInsecureHttp) "http" else "https"
+            val url = "$scheme://$registryHost/v2/"
+            val request = Request.Builder()
+                .url(url)
+                .header("Authorization", basicAuth(credential))
+                .get()
+                .build()
+            val response = try {
+                tokenClient.newCall(request).execute() // 无拦截器,自己处理挑战
+            } catch (e: IOException) {
+                return@withContext AuthCheckResult.NETWORK_ERROR
+            }
+            response.use {
+                when {
+                    it.code == 200 -> AuthCheckResult.VALID
+                    it.code == 401 -> {
+                        val challenge = it.header("WWW-Authenticate")
+                        if (challenge?.startsWith("Bearer") == true) {
+                            if (fetchToken(challenge, credential) != null) AuthCheckResult.VALID
+                            else AuthCheckResult.INVALID
+                        } else {
+                            AuthCheckResult.INVALID
+                        }
+                    }
+                    else -> AuthCheckResult.INVALID
+                }
+            }
+        }
 
     /** pull:GET manifest + GET layer(流式,带下载进度回调)。 */
     suspend fun pull(ref: Reference, onProgress: ((Long) -> Unit)? = null): PullResult = withContext(Dispatchers.IO) {
