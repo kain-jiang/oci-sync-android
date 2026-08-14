@@ -20,28 +20,36 @@ object SafFiles {
 
     private const val MAX_NAME_LENGTH = 80
 
-    /** 解析 content uri 的文件名。 */
+    /** 解析 content uri 的文件名(tree uri 等不支持 query 的返回 null → 兜底)。 */
     fun queryName(context: Context, uri: Uri): String {
-        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            if (idx >= 0 && cursor.moveToFirst()) {
-                cursor.getString(idx)?.let { return it }
+        return try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (idx >= 0 && cursor.moveToFirst()) {
+                    cursor.getString(idx)?.let { return it }
+                }
             }
+            uri.lastPathSegment ?: "file"
+        } catch (e: Exception) {
+            // SAF tree/document uri 可能不支持 query(SecurityException/IllegalArgumentException 等)
+            uri.lastPathSegment ?: "file"
         }
-        // 回退:从 uri path 推断
-        return uri.lastPathSegment ?: "file"
     }
 
-    /** 解析 content uri 的文件大小(未知返回 -1)。 */
+    /** 解析 content uri 的文件大小(未知或不可查询返回 -1)。 */
     fun querySize(context: Context, uri: Uri): Long {
-        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val idx = cursor.getColumnIndex(OpenableColumns.SIZE)
-            if (idx >= 0 && cursor.moveToFirst()) {
-                val size = cursor.getLong(idx)
-                if (size >= 0) return size
+        return try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val idx = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (idx >= 0 && cursor.moveToFirst()) {
+                    val size = cursor.getLong(idx)
+                    if (size >= 0) return size
+                }
             }
+            -1L
+        } catch (e: Exception) {
+            -1L
         }
-        return -1L
     }
 
     /** 将单文件 content uri 拷贝到 cacheDir,返回本地文件。 */

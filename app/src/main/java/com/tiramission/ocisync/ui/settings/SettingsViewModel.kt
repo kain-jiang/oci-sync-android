@@ -84,7 +84,8 @@ class SettingsViewModel(
             return
         }
         val host = s.credentialHost.trim()
-        val credential = Credential(s.credentialUsername.trim(), s.credentialPassword)
+        // 凭据统一 trim(用户可能从登录指令复制带空格)
+        val credential = Credential(s.credentialUsername.trim(), s.credentialPassword.trim())
         viewModelScope.launch {
             _uiState.update { it.copy(credentialVerifying = true) }
             val result = ociClient.checkCredential(host, credential)
