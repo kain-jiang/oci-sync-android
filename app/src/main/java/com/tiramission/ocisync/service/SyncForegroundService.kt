@@ -58,6 +58,13 @@ class SyncForegroundService : Service() {
                 startForegroundCompat()
                 startPush(File(localPath), ref, intent.getStringExtra(EXTRA_PASSPHRASE))
             }
+            ACTION_PULL -> {
+                val ref = intent.getStringExtra(EXTRA_REMOTE_REF) ?: run { stopSelf(); return START_NOT_STICKY }
+                val destTreeUri = intent.getStringExtra(EXTRA_DEST_TREE_URI)?.let { android.net.Uri.parse(it) }
+                    ?: run { stopSelf(); return START_NOT_STICKY }
+                startForegroundCompat()
+                startPull(ref, destTreeUri, intent.getStringExtra(EXTRA_PASSPHRASE))
+            }
         }
         return START_NOT_STICKY
     }
@@ -88,6 +95,37 @@ class SyncForegroundService : Service() {
                 onProgress = { p -> updateProgress(p) },
             )
             notifyResult(
+                title = getString(R.string.notif_title_push),
+                success = result.isSuccess,
+                message = result.exceptionOrNull()?.message,
+            )
+            stopSelf()
+        }
+    }
+
+    private fun startPull(ref: String, destTreeUri: android.net.Uri, passphrase: String?) {
+        transferJob = serviceScope.launch {
+            val result = runCatching {
+                // 1. 解包到 cacheDir 临时目录(SAF tree 无 File 映射)
+                val tmpDir = File(cacheDir, "pull/${java.util.UUID.randomUUID()}").apply { mkdirs() }
+                try {
+                    syncService.pull(
+                        com.tiramission.ocisync.core.model.PullRequest(
+                            remoteRef = ref,
+                            destDir = tmpDir,
+                            passphrase = passphrase?.ifBlank { null },
+                        ),
+                        onStage = { stage -> updateStage(stage) },
+                        onProgress = { p -> updateProgress(p) },
+                    ).getOrThrow()
+                    // 2. 复制到用户选择的 SAF 目录
+                    com.tiramission.ocisync.data.SafFiles.copyDirToTree(this@SyncForegroundService, tmpDir, destTreeUri)
+                } finally {
+                    tmpDir.deleteRecursively()
+                }
+            }
+            notifyResult(
+                title = getString(R.string.notif_title_pull),
                 success = result.isSuccess,
                 message = result.exceptionOrNull()?.message,
             )
@@ -100,21 +138,24 @@ class SyncForegroundService : Service() {
             Stage.PACKING -> getString(R.string.stage_packing)
             Stage.ENCRYPTING -> getString(R.string.stage_encrypting)
             Stage.UPLOADING -> getString(R.string.stage_uploading)
+            Stage.DOWNLOADING -> getString(R.string.stage_downloading)
+            Stage.DECRYPTING -> getString(R.string.stage_decrypting)
+            Stage.UNPACKING -> getString(R.string.stage_unpacking)
             Stage.DONE -> getString(R.string.stage_done)
             else -> getString(R.string.notif_starting)
         }
-        notifyTransfer(getString(R.string.notif_title_push), label)
+        notifyTransfer(getString(R.string.notif_title_transfer), label)
     }
 
     private fun updateProgress(progress: Float) {
         val percent = (progress.coerceIn(0f, 1f) * 100).toInt()
-        notifyTransfer(getString(R.string.notif_title_push), getString(R.string.notif_progress, percent))
+        notifyTransfer(getString(R.string.notif_title_transfer), getString(R.string.notif_progress, percent))
     }
 
-    private fun notifyResult(success: Boolean, message: String?) {
-        val title = if (success) getString(R.string.notif_success) else getString(R.string.notif_failed)
-        val text = if (success) getString(R.string.notif_push_done) else (message ?: getString(R.string.common_error))
-        val notification = buildBase(title, text)
+    private fun notifyResult(title: String, success: Boolean, message: String?) {
+        val resultTitle = if (success) getString(R.string.notif_success) else getString(R.string.notif_failed)
+        val text = if (success) getString(R.string.notif_done, title) else (message ?: getString(R.string.common_error))
+        val notification = buildBase(resultTitle, text)
             .setContentIntent(launchIntent())
             .setAutoCancel(true)
             .build()
@@ -191,10 +232,12 @@ class SyncForegroundService : Service() {
         private const val CHANNEL_ID = "oci_sync_transfer"
         private const val NOTIFICATION_ID = 1001
         private const val ACTION_PUSH = "com.tiramission.ocisync.action.PUSH"
+        private const val ACTION_PULL = "com.tiramission.ocisync.action.PULL"
         private const val ACTION_CANCEL = "com.tiramission.ocisync.action.CANCEL"
         private const val EXTRA_LOCAL_PATH = "local_path"
         private const val EXTRA_REMOTE_REF = "remote_ref"
         private const val EXTRA_PASSPHRASE = "passphrase"
+        private const val EXTRA_DEST_TREE_URI = "dest_tree_uri"
 
         /** 启动前台服务执行 push(大文件专用)。 */
         fun startPush(context: Context, localPath: File, ref: String, passphrase: String?) {
@@ -202,6 +245,16 @@ class SyncForegroundService : Service() {
                 .setAction(ACTION_PUSH)
                 .putExtra(EXTRA_LOCAL_PATH, localPath.absolutePath)
                 .putExtra(EXTRA_REMOTE_REF, ref)
+                .putExtra(EXTRA_PASSPHRASE, passphrase)
+            context.startForegroundService(intent)
+        }
+
+        /** 启动前台服务执行 pull(大文件专用;destTreeUri 需已持久化授权)。 */
+        fun startPull(context: Context, ref: String, destTreeUri: android.net.Uri, passphrase: String?) {
+            val intent = Intent(context, SyncForegroundService::class.java)
+                .setAction(ACTION_PULL)
+                .putExtra(EXTRA_REMOTE_REF, ref)
+                .putExtra(EXTRA_DEST_TREE_URI, destTreeUri.toString())
                 .putExtra(EXTRA_PASSPHRASE, passphrase)
             context.startForegroundService(intent)
         }

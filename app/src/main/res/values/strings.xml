@@ -89,10 +89,13 @@
     <!-- 通知 -->
     <string name="notif_channel_name">传输任务</string>
     <string name="notif_title_push">推送文件</string>
+    <string name="notif_title_pull">拉取文件</string>
+    <string name="notif_title_transfer">传输任务</string>
     <string name="notif_starting">准备中…</string>
     <string name="notif_progress">进度 %1$d%%</string>
     <string name="notif_success">成功</string>
     <string name="notif_failed">失败</string>
+    <string name="notif_done">%1$s完成</string>
     <string name="notif_push_done">推送完成</string>
 
     <!-- 拉取 -->
@@ -102,6 +105,7 @@
     <string name="pull_dest_selected">目标:%1$s</string>
     <string name="pull_passphrase">解密口令(加密内容必填)</string>
     <string name="pull_execute">拉取</string>
+    <string name="pull_bg_started">拉取已转入后台任务,可在通知栏查看进度</string>
 
     <!-- 阶段 -->
     <string name="stage_packing">打包中…</string>

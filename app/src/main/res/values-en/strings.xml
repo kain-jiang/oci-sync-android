@@ -89,10 +89,13 @@
     <!-- Notifications -->
     <string name="notif_channel_name">Transfers</string>
     <string name="notif_title_push">Push files</string>
+    <string name="notif_title_pull">Pull files</string>
+    <string name="notif_title_transfer">Transfer</string>
     <string name="notif_starting">Preparing…</string>
     <string name="notif_progress">Progress %1$d%%</string>
     <string name="notif_success">Success</string>
     <string name="notif_failed">Failed</string>
+    <string name="notif_done">%1$s finished</string>
     <string name="notif_push_done">Push finished</string>
 
     <!-- Pull -->
@@ -102,6 +105,7 @@
     <string name="pull_dest_selected">Destination: %1$s</string>
     <string name="pull_passphrase">Passphrase (required if encrypted)</string>
     <string name="pull_execute">Pull</string>
+    <string name="pull_bg_started">Pull moved to background task, see notification for progress</string>
 
     <!-- Stages -->
     <string name="stage_packing">Packing…</string>

@@ -5,10 +5,12 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.tiramission.ocisync.R
 import com.tiramission.ocisync.core.model.PullRequest
 import com.tiramission.ocisync.core.model.Stage
 import com.tiramission.ocisync.core.model.SyncService
 import com.tiramission.ocisync.data.SafFiles
+import com.tiramission.ocisync.service.SyncForegroundService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +36,7 @@ class PullViewModel(
         val stage: Stage = Stage.IDLE,
         val progress: Float = 0f,
         val error: String? = null,
+        val message: String? = null,          // 提示(Snackbar),如"已转入后台任务"
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -42,6 +45,16 @@ class PullViewModel(
     private var pullJob: Job? = null
 
     fun onDestPicked(uri: Uri) {
+        // 持久化 tree 授权:前台服务(Activity 可能已销毁)执行 pull 时需要
+        try {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+        } catch (e: SecurityException) {
+            // 部分 provider 不支持持久化,忽略(服务内仍可尝试)
+        }
         _uiState.update {
             it.copy(destTreeUri = uri, destName = SafFiles.queryName(context, uri), error = null)
         }
@@ -51,46 +64,30 @@ class PullViewModel(
     fun onPassphraseChange(v: String) = _uiState.update { it.copy(passphrase = v) }
     fun togglePassphrase() = _uiState.update { it.copy(showPassphrase = !it.showPassphrase) }
 
+    /**
+     * 启动拉取。统一走前台服务(通知显示进度,退后台/锁屏不中断,见 docs/06 §6)。
+     */
     fun startPull() {
         val state = _uiState.value
         val treeUri = state.destTreeUri ?: return
         if (state.remoteRef.isBlank()) return
-        pullJob?.cancel()
-        pullJob = viewModelScope.launch {
-            _uiState.update { it.copy(isRunning = true, error = null, progress = 0f, stage = Stage.DOWNLOADING) }
-            val result = runCatching {
-                // 1. 解包到 cacheDir 临时目录(SAF tree 无 File 映射)
-                val tmpDir = File(context.cacheDir, "pull/${UUID.randomUUID()}").apply { mkdirs() }
-                try {
-                    syncService.pull(
-                        PullRequest(
-                            remoteRef = state.remoteRef.trim(),
-                            destDir = tmpDir,
-                            passphrase = state.passphrase.ifBlank { null },
-                        ),
-                        onStage = { stage -> _uiState.update { it.copy(stage = stage) } },
-                        onProgress = { p -> _uiState.update { it.copy(progress = p) } },
-                    ).getOrThrow()
-                    // 2. 复制到用户选择的 SAF 目录
-                    SafFiles.copyDirToTree(context, tmpDir, treeUri)
-                } finally {
-                    tmpDir.deleteRecursively()
-                }
-            }
-            _uiState.update {
-                it.copy(
-                    isRunning = false,
-                    stage = Stage.IDLE,
-                    error = result.exceptionOrNull()?.message,
-                )
-            }
+        SyncForegroundService.startPull(
+            context,
+            state.remoteRef.trim(),
+            treeUri,
+            state.passphrase.ifBlank { null },
+        )
+        _uiState.update {
+            it.copy(error = null, message = context.getString(R.string.pull_bg_started))
         }
     }
 
     fun cancel() {
-        pullJob?.cancel()
+        // 取消经通知栏 action 完成;此处仅重置 UI 状态
         _uiState.update { it.copy(isRunning = false, stage = Stage.IDLE) }
     }
+
+    fun onMessageShown() = _uiState.update { it.copy(message = null) }
 
     class Factory(
         private val syncService: SyncService,

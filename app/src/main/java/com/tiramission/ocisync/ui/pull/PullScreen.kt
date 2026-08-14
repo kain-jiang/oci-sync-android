@@ -21,11 +21,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -58,6 +62,15 @@ fun PullScreen(
         uri?.let { viewModel.onDestPicked(it) }
     }
 
+    // 提示消息(转入后台任务等)
+    val snackbarHostState = remember { SnackbarHostState() }
+    androidx.compose.runtime.LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onMessageShown()
+        }
+    }
+
     val stageLabel = when (state.stage) {
         Stage.DOWNLOADING -> stringResource(R.string.stage_downloading)
         Stage.DECRYPTING -> stringResource(R.string.stage_decrypting)
@@ -67,6 +80,7 @@ fun PullScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.pull_title)) },
