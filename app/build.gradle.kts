@@ -33,6 +33,7 @@ android {
     // 注:AGP 9 built-in Kotlin 下无 kotlinOptions 扩展,Kotlin jvmTarget 自动与 compileOptions 对齐
     buildFeatures {
         compose = true
+        buildConfig = true // 设置页显示版本号
     }
     testOptions {
         unitTests {
@@ -56,6 +57,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

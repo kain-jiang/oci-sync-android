@@ -3,40 +3,17 @@ package com.tiramission.ocisync
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.tiramission.ocisync.ui.navigation.OciSyncAppRoot
+import com.tiramission.ocisync.ui.theme.OciSyncTheme
 
+/** 单 Activity 应用壳(ADR 决策:单 Activity + Navigation Compose)。 */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    Greeting()
-                }
+            OciSyncTheme {
+                OciSyncAppRoot()
             }
         }
-    }
-}
-
-@Composable
-fun Greeting() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "OCI Sync")
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MaterialTheme {
-        Greeting()
     }
 }

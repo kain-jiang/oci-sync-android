@@ -1,3 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 应用 -->
     <string name="app_name">OCI Sync</string>
+
+    <!-- 底部导航 -->
+    <string name="tab_home">首页</string>
+    <string name="tab_browse">仓库</string>
+    <string name="tab_history">历史</string>
+
+    <!-- 首页 -->
+    <string name="home_shortcuts">快捷仓库</string>
+    <string name="home_add_shortcut">添加</string>
+    <string name="home_no_shortcuts">还没有快捷仓库,点右上角「+」添加常用仓库,一键推送/拉取。</string>
+    <string name="home_push">推送文件</string>
+    <string name="home_pull">拉取文件</string>
+    <string name="home_settings">设置</string>
+    <string name="home_push_coming_soon">推送功能开发中,敬请期待</string>
+    <string name="home_pull_coming_soon">拉取功能开发中,敬请期待</string>
+
+    <!-- 设置 -->
+    <string name="settings_title">设置</string>
+    <string name="settings_credentials">凭据管理</string>
+    <string name="settings_no_credentials">暂无凭据,添加 registry 凭据以访问私有仓库。</string>
+    <string name="settings_add_credential">添加凭据</string>
+    <string name="settings_host">Registry 地址</string>
+    <string name="settings_username">用户名</string>
+    <string name="settings_password">密码 / Token</string>
+    <string name="settings_shortcuts">快捷仓库</string>
+    <string name="settings_no_shortcuts">暂无快捷仓库。</string>
+    <string name="settings_add_shortcut">添加快捷仓库</string>
+    <string name="settings_shortcut_name">名称</string>
+    <string name="settings_shortcut_repo">仓库地址</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_version">版本 %1$s</string>
+    <string name="settings_upstream">上游 Go CLI:tiramission/oci-sync</string>
+    <string name="settings_license">MIT License</string>
+    <string name="settings_credential_added">凭据已保存</string>
+    <string name="settings_credential_removed">凭据已删除</string>
+    <string name="settings_shortcut_added">快捷仓库已添加</string>
+    <string name="settings_shortcut_removed">快捷仓库已删除</string>
+    <string name="settings_error_invalid">输入不完整或格式非法</string>
+    <string name="settings_confirm_delete">删除</string>
+    <string name="settings_back">返回</string>
+
+    <!-- 仓库浏览 -->
+    <string name="browse_title">仓库浏览</string>
+    <string name="browse_hint">输入 registry 或仓库,如 registry.example.com/team/files</string>
+    <string name="browse_search">查询</string>
+    <string name="browse_placeholder">输入仓库引用后点击查询(功能开发中)</string>
+
+    <!-- 历史 -->
+    <string name="history_title">历史记录</string>
+    <string name="history_empty">暂无操作记录</string>
+    <string name="history_clear">清空</string>
+    <string name="history_clear_confirm">确定清空全部历史记录?</string>
+    <string name="history_type_push">推送</string>
+    <string name="history_type_pull">拉取</string>
+    <string name="history_type_delete">删除</string>
+    <string name="history_type_label">标签</string>
+
+    <!-- 通用 -->
+    <string name="common_ok">确定</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_success">成功</string>
+    <string name="common_failed">失败</string>
+    <string name="common_error">错误</string>
 </resources>
